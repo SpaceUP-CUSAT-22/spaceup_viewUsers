@@ -20,6 +20,7 @@ const db = getFirestore(app);
 
 function Tshirt() {
   const [users, setUsers] = React.useState([])
+  const [usersCopy, setUsersCopy] = React.useState([])
   React.useEffect(() => {
     async function fetchRegisteredUsers() {
       const usersCollection = collection(db, 'orders');
@@ -34,6 +35,7 @@ function Tshirt() {
         });
         
         setUsers(usersData)
+        setUsersCopy(usersData)
         console.log(usersData)
       } catch (error) {
         console.error('Error fetching registered users:', error);
@@ -45,16 +47,16 @@ function Tshirt() {
 
   const handleCode = (e) => {
     if(e.target.value == ''){
-      setUsers(users)
+      setUsersCopy(users)
     }else{
-      setUsers(users.filter(user => user.token.toLowerCase().includes(e.target.value)))
+      setUsersCopy(users.filter(user => user.token.toLowerCase().includes(e.target.value)))
     }
   }
   const handleName = (e) => {
     if(e.target.value == ''){
-      setUsers(users)
+      setUsersCopy(users)
     }else{
-      setUsers(users.filter(user => user.name.toLowerCase().includes(e.target.value)))
+      setUsersCopy(users.filter(user => user.name.toLowerCase().includes(e.target.value)))
     }
   }
 
@@ -98,7 +100,7 @@ function Tshirt() {
             <p className='text-white text-xl'>Total number of seds members: <span className='font-bold text-2xl ml-3'>{users.find(user => user.cusatian == 'seds') ? users.filter(user => user.cusatian == 'seds').length : 0}</span></p>
             <p className='text-white text-xl'>Total number of non-seds members: <span className='font-bold text-2xl ml-3'>{users.find(user => user.cusatian == 'nonseds') ? users.filter(user => user.cusatian == 'nonseds').length : 0}</span></p>
         </div>}
-      {users && users.map(user => (
+      {usersCopy && usersCopy.map(user => (
         <>
             <div className='my-10 bg-zinc-900 px-10 py-5 rounded-[15px]' key={user.id}>
                 <h1 className='text-red-500 text-xl'><span className='font-bold'>Token: </span>{user.token || 'None'}</h1>
