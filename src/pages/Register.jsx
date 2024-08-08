@@ -20,6 +20,7 @@ const db = getFirestore(app);
 
 function Register() {
   const [users, setUsers] = React.useState([])
+  const [totalPrice, setTotalPrice] = React.useState(0)
   const [usersCopy, setUsersCopy] = React.useState([])
 
   React.useEffect(() => {
@@ -36,6 +37,7 @@ function Register() {
         });
         
         setUsers(usersData)
+        setTotalPrice(usersData.reduce((sum, user) => sum + user.price, 0))
         setUsersCopy(usersData)
         console.log(usersData)
       } catch (error) {
@@ -53,6 +55,7 @@ function Register() {
       setUsersCopy(users.filter(user => user.token.toLowerCase().includes(e.target.value)))
     }
   }
+
   const handleName = (e) => {
     if(e.target.value == ''){
       setUsersCopy(users)
@@ -90,15 +93,17 @@ function Register() {
         <h1 className='text-white text-xl'><span className='font-bold'>Referral Code: </span>None</h1>
         <img src='/vite.svg' className='w-[150px]' alt="" />
       </div> */}
-        {users && <div className='bg-zinc-900 rounded-[15px] px-10 py-5 my-20'>
-            <p className='text-white text-xl'>Total registered: <span className='font-bold text-2xl ml-3'>{users.length}</span></p>
-            <p className='text-white text-xl'>Total number of seds members: <span className='font-bold text-2xl ml-3'>{users.find(user => user.cusatian == 'seds') ? users.filter(user => user.cusatian == 'seds').length : 0}</span></p>
-            <p className='text-white text-xl'>Total number of non-seds members: <span className='font-bold text-2xl ml-3'>{users.find(user => user.cusatian == 'nonseds') ? users.filter(user => user.cusatian == 'nonseds').length : 0}</span></p>
-            <p className='text-white text-xl'>Total number of tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.tshirt == 'yes') ? users.filter(user => user.tshirt == 'yes').length : 0}</span></p>
-        </div>}
+      {users && 
+      <div className='bg-zinc-900 rounded-[15px] px-10 py-5 my-20'>
+        <p className='text-white text-xl'>Total registered: <span className='font-bold text-2xl ml-3'>{users.length}</span></p>
+        <p className='text-white text-xl'>Total number of seds members: <span className='font-bold text-2xl ml-3'>{users.find(user => user.cusatian == 'seds') ? users.filter(user => user.cusatian == 'seds').length : 0}</span></p>
+        <p className='text-white text-xl'>Total number of non-seds members: <span className='font-bold text-2xl ml-3'>{users.find(user => user.cusatian == 'nonseds') ? users.filter(user => user.cusatian == 'nonseds').length : 0}</span></p>
+        <p className='text-white text-xl'>Total number of tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.tshirt == 'yes') ? users.filter(user => user.tshirt == 'yes').length : 0}</span></p>
+        <p className='text-white text-xl'>Total Amount received: <span className='font-bold text-2xl ml-3'>{totalPrice}</span></p>
+      </div>}
       {usersCopy && usersCopy.map(user => (
         <>
-            <div className='my-10 bg-zinc-900 px-10 py-5 rounded-[15px]' key={user.id}>
+          <div className='my-10 bg-zinc-900 px-10 py-5 rounded-[15px]' key={user.id}>
             <h1 className='text-red-500 text-xl'><span className='font-bold'>Token: </span>{user.token || 'None'}</h1>
             <h1 className='text-white text-xl'><span className='font-bold'>Name: </span>{user.name}</h1>
             <h1 className='text-white text-xl'><span className='font-bold'>Phone: </span>{user.phone}</h1>
@@ -110,7 +115,7 @@ function Register() {
             <h1 className='text-white text-xl'><span className='font-bold'>Address: </span>{user.address}</h1></>}
             <h1 className='text-white text-xl'><span className='font-bold'>from CUSAT: </span>{user.cusatian}</h1>
             <img src={user.paymentScreenshot} className='w-[150px]' alt="" />
-            </div>
+          </div>
         </>
       ))
       }

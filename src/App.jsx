@@ -10,6 +10,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/tshirt" element={<Tshirt />} />
+          <Route path="/" element={<Register />} />
           <Route path="/register" element={<Register />} />
         </Routes>
       </BrowserRouter>

@@ -20,6 +20,7 @@ const db = getFirestore(app);
 
 function Tshirt() {
   const [users, setUsers] = React.useState([])
+  const [totalPrice, setTotalPrice] = React.useState(0)
   const [usersCopy, setUsersCopy] = React.useState([])
   React.useEffect(() => {
     async function fetchRegisteredUsers() {
@@ -35,6 +36,7 @@ function Tshirt() {
         });
         
         setUsers(usersData)
+        setTotalPrice(usersData.reduce((sum, user) => sum + user.price, 0))
         setUsersCopy(usersData)
         console.log(usersData)
       } catch (error) {
@@ -90,6 +92,7 @@ function Tshirt() {
         <img src='/vite.svg' className='w-[150px]' alt="" />
       </div> */}
         {users && <div className='bg-zinc-900 rounded-[15px] px-10 py-5 my-20'>
+            <p className='text-white text-xl'>Total Amount Received: <span className='font-bold text-2xl ml-3'>{totalPrice}</span></p>
             <p className='text-white text-xl'>Total number of tshirts: <span className='font-bold text-2xl ml-3'>{users.length}</span></p>
             <p className='text-white text-xl'>Total number of XS Tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.size == 'XS') ? users.filter(user => user.size == 'XS').length : 0}</span></p>
             <p className='text-white text-xl'>Total number of S Tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.size == 'S') ? users.filter(user => user.size == 'S').length + 1 : 0}</span></p>
