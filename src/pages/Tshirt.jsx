@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import { getFirestore, collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { Link } from 'react-router-dom';
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
@@ -19,105 +20,137 @@ const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
 function Tshirt() {
-  const [users, setUsers] = React.useState([])
-  const [totalPrice, setTotalPrice] = React.useState(0)
-  const [usersCopy, setUsersCopy] = React.useState([])
-  React.useEffect(() => {
+  const [users, setUsers] = useState([])
+  const [totalPrice, setTotalPrice] = useState(0)
+  const [usersCopy, setUsersCopy] = useState([])
+
+  useEffect(() => {
     async function fetchRegisteredUsers() {
       const usersCollection = collection(db, 'orders');
       
       try {
         const querySnapshot = await getDocs(usersCollection);
         
-        const usersData = [];
-        
-        querySnapshot.forEach((doc) => {
-          usersData.push({ id: doc.id, ...doc.data() });
-        });
+        const usersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
         setUsers(usersData)
         setTotalPrice(usersData.reduce((sum, user) => sum + user.price, 0))
         setUsersCopy(usersData)
-        console.log(usersData)
       } catch (error) {
         console.error('Error fetching registered users:', error);
-        throw error;
       }
     }
     fetchRegisteredUsers()
   }, [])
 
   const handleCode = (e) => {
-    if(e.target.value == ''){
-      setUsersCopy(users)
-    }else{
-      setUsersCopy(users.filter(user => user.token.toLowerCase().includes(e.target.value)))
-    }
+    const value = e.target.value.toLowerCase();
+    setUsersCopy(value ? users.filter(user => user.token.toLowerCase().includes(value)) : users)
   }
+
   const handleName = (e) => {
-    if(e.target.value == ''){
-      setUsersCopy(users)
-    }else{
-      setUsersCopy(users.filter(user => user.name.toLowerCase().includes(e.target.value)))
+    const value = e.target.value.toLowerCase();
+    setUsersCopy(value ? users.filter(user => user.name.toLowerCase().includes(value)) : users)
+  }
+
+  const handleDeliveredChange = async (userId, delivered) => {
+    const userRef = doc(db, 'orders', userId);
+    try {
+      await updateDoc(userRef, { delivered });
+      setUsers(users.map(user => user.id === userId ? {...user, delivered} : user));
+      setUsersCopy(usersCopy.map(user => user.id === userId ? {...user, delivered} : user));
+    } catch (error) {
+      console.error("Error updating delivery status:", error);
     }
   }
 
   return (
-    <div className='bg-zinc-800 px-10 py-10'>
-      <div className='flex justify-evenly'>
-        <Link to='/register' className='bg-red-500 px-5 py-3 rounded-[10px] text-white'>Register</Link>
-        <input onChange={e => handleCode(e)} type="text" placeholder='search by code' className='pl-3 py-3 rounded-[10px] border-[1.5px] border-zinc-300' />
-        <input onChange={e => handleName(e)} type="text" placeholder='search by name' className='pl-3 py-3 rounded-[10px] border-[1.5px] border-zinc-300' />
-      </div>
-      {/* <div className='my-10 bg-zinc-900 px-10 py-5 rounded-[15px]'>
-        <h1 className='text-red-500 text-xl'><span className='font-bold'>Code: </span>#asdasdf</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Name: </span>Abhinav C V</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Phone: </span>+919778393558</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Name: </span>abhinavcv007@gmail.com  </h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>from CUSAT: </span>Yes</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>from SEDS: </span>Yes</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Year of study: </span>2025</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Referral Code: </span>None</h1>
-        <img src='/vite.svg' className='w-[150px]' alt="" />
-      </div>
-      <div className='my-10 bg-zinc-900 px-10 py-5 rounded-[15px]'>
-        <h1 className='text-red-500 text-xl'><span className='font-bold'>Code: </span>#asdasdf</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Name: </span>Abhinav C V</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Phone: </span>+919778393558</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Name: </span>abhinavcv007@gmail.com  </h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>from CUSAT: </span>Yes</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>from SEDS: </span>Yes</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Year of study: </span>2025</h1>
-        <h1 className='text-white text-xl'><span className='font-bold'>Referral Code: </span>None</h1>
-        <img src='/vite.svg' className='w-[150px]' alt="" />
-      </div> */}
-        {users && <div className='bg-zinc-900 rounded-[15px] px-10 py-5 my-20'>
-            <p className='text-white text-xl'>Total Amount Received: <span className='font-bold text-2xl ml-3'>{totalPrice}</span></p>
-            <p className='text-white text-xl'>Total number of tshirts: <span className='font-bold text-2xl ml-3'>{users.length}</span></p>
-            <p className='text-white text-xl'>Total number of XS Tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.size == 'XS') ? users.filter(user => user.size == 'XS').length : 0}</span></p>
-            <p className='text-white text-xl'>Total number of S Tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.size == 'S') ? users.filter(user => user.size == 'S').length + 1 : 0}</span></p>
-            <p className='text-white text-xl'>Total number of M Tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.size == 'M') ? users.filter(user => user.size == 'M').length : 0}</span></p>
-            <p className='text-white text-xl'>Total number of L Tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.size == 'L') ? users.filter(user => user.size == 'L').length : 0}</span></p>
-            <p className='text-white text-xl'>Total number of XL Tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.size == 'XL') ? users.filter(user => user.size == 'XL').length : 0}</span></p>
-            <p className='text-white text-xl'>Total number of XXL Tshirts: <span className='font-bold text-2xl ml-3'>{users.find(user => user.size == 'XXL') ? users.filter(user => user.size == 'XXL').length : 0}</span></p>
-            <p className='text-white text-xl'>Total number of seds members: <span className='font-bold text-2xl ml-3'>{users.find(user => user.cusatian == 'seds') ? users.filter(user => user.cusatian == 'seds').length : 0}</span></p>
-            <p className='text-white text-xl'>Total number of non-seds members: <span className='font-bold text-2xl ml-3'>{users.find(user => user.cusatian == 'nonseds') ? users.filter(user => user.cusatian == 'nonseds').length : 0}</span></p>
-        </div>}
-      {usersCopy && usersCopy.map(user => (
-        <>
-            <div className='my-10 bg-zinc-900 px-10 py-5 rounded-[15px]' key={user.id}>
-                <h1 className='text-red-500 text-xl'><span className='font-bold'>Token: </span>{user.token || 'None'}</h1>
-                <h1 className='text-white text-xl'><span className='font-bold'>Name: </span>{user.name}</h1>
-                <h1 className='text-white text-xl'><span className='font-bold'>Phone: </span>{user.phone}</h1>
-                <h1 className='text-white text-xl'><span className='font-bold'>Email: </span>{user.email}</h1>
-                <h1 className='text-white text-xl'><span className='font-bold'>Size: </span>{user.size}</h1>
-                <h1 className='text-white text-xl'><span className='font-bold'>Address: </span>{user.address}</h1>
-                <h1 className='text-white text-xl'><span className='font-bold'>from CUSAT: </span>{user.cusatian}</h1>
-                <img src={user.paymentScreenshot} className='w-[150px]' alt="" />
+    <div className="bg-zinc-900 min-h-screen p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <Link to="/register" className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
+            Register
+          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <input
+              onChange={handleCode}
+              type="text"
+              placeholder="Search by code"
+              className="w-full sm:w-64 px-4 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+            <input
+              onChange={handleName}
+              type="text"
+              placeholder="Search by name"
+              className="w-full sm:w-64 px-4 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
+            />
+          </div>
+        </div>
+
+        {users.length > 0 && (
+          <div className="bg-zinc-800 rounded-xl p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[
+              { label: "Total Amount", value: `₹${totalPrice}` },
+              { label: "Total T-shirts", value: users.length },
+              { label: "XS T-shirts", value: users.filter(user => user.size === 'XS').length },
+              { label: "S T-shirts", value: users.filter(user => user.size === 'S').length + 1 },
+              { label: "M T-shirts", value: users.filter(user => user.size === 'M').length },
+              { label: "L T-shirts", value: users.filter(user => user.size === 'L').length },
+              { label: "XL T-shirts", value: users.filter(user => user.size === 'XL').length },
+              { label: "XXL T-shirts", value: users.filter(user => user.size === 'XXL').length },
+              { label: "SEDS members", value: users.filter(user => user.cusatian === 'seds').length },
+              { label: "Non-SEDS members", value: users.filter(user => user.cusatian === 'nonseds').length },
+            ].map((item, index) => (
+              <div key={index} className="bg-zinc-700 p-4 rounded-lg">
+                <p className="text-zinc-300 text-sm">{item.label}</p>
+                <p className="text-white text-2xl font-bold">{item.value}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {usersCopy.map(user => (
+            <div key={user.id} className="bg-zinc-800 rounded-xl overflow-hidden shadow-lg">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-red-500 text-xl font-bold">{user.token || 'No Token'}</h2>
+                  <div className="flex items-center">
+                    <input 
+                      type="checkbox" 
+                      id={`delivered-${user.id}`}
+                      checked={user.delivered || false}
+                      onChange={(e) => handleDeliveredChange(user.id, e.target.checked)}
+                      className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                    />
+                    <label htmlFor={`delivered-${user.id}`} className="ml-2 text-white text-sm">Delivered</label>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { label: "Name", value: user.name },
+                    { label: "Phone", value: user.phone },
+                    { label: "Email", value: user.email },
+                    { label: "Size", value: user.size },
+                    { label: "Address", value: user.address },
+                    { label: "From CUSAT", value: user.cusatian },
+                  ].map((item, index) => (
+                    <p key={index} className="text-white">
+                      <span className="font-semibold">{item.label}:</span> {item.value}
+                    </p>
+                  ))}
+                </div>
+              </div>
+              {user.paymentScreenshot && (
+                <div className="p-4 bg-zinc-700">
+                  <p className="text-white text-sm mb-2">Payment Screenshot:</p>
+                  <img src={user.paymentScreenshot} className="w-full h-full object-cover rounded" alt="Payment Screenshot" />
+                </div>
+              )}
             </div>
-        </>
-      ))
-      }
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
