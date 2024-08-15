@@ -3,6 +3,8 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import { Link } from 'react-router-dom';
+import Papa from 'papaparse';
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
@@ -81,6 +83,19 @@ function Register() {
     }
   };
 
+  const exportToCSV = () => {
+    const csvData = Papa.unparse(users);
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'registrations.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
   return (
     <div className="bg-zinc-900 min-h-screen p-4 sm:p-6 lg:p-8">
   <div className="max-w-7xl mx-auto">
@@ -102,6 +117,11 @@ function Register() {
           className="w-full sm:w-64 px-4 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-red-500"
         />
       </div>
+      <button
+        onClick={exportToCSV}
+        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
+        Export to CSV
+      </button>
     </div>
 
     {users && (
