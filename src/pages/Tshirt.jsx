@@ -118,6 +118,7 @@ function Tshirt() {
               { label: "XXL T-shirts", value: users.filter(user => user.size === 'XXL').length },
               { label: "SEDS members", value: users.filter(user => user.cusatian === 'seds').length },
               { label: "Non-SEDS members", value: users.filter(user => user.cusatian === 'nonseds').length },
+              { label: "Independence Offer", value: users.filter(user => user.independence === true).length },
             ].map((item, index) => (
               <div key={index} className="bg-zinc-700 p-4 rounded-lg">
                 <p className="text-zinc-300 text-sm">{item.label}</p>
@@ -129,7 +130,7 @@ function Tshirt() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {usersCopy.map(user => (
-            <div key={user.id} className="bg-zinc-800 rounded-xl overflow-hidden shadow-lg">
+            <div key={user.id} className={`${user.independence ? 'bg-green-900' : 'bg-zinc-800'} rounded-xl overflow-hidden shadow-lg`}>
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-red-500 text-xl font-bold">{user.token || 'No Token'}</h2>
@@ -152,6 +153,17 @@ function Tshirt() {
                     { label: "Size", value: user.size },
                     { label: "Address", value: user.address },
                     { label: "From CUSAT", value: user.cusatian },
+                    ...(user.independence == true && user.sizes ? [
+                    
+                      { label: "T-shirt 1", value: user.sizes[0] },
+                      { label: "T-shirt 2", value: user.sizes[1] },
+                      { label: "T-shirt 3", value: user.sizes[2] },
+                      { label: "T-shirt 4", value: user.sizes[3] },
+                      { label: "T-shirt 5", value: user.sizes[4] },
+                      { label: "T-shirt 6", value: user.sizes[5] },
+                      { label: "T-shirt 7", value: user.sizes[6] },
+                      { label: "T-shirt 8", value: user.sizes[7] },
+                    ]: [])
                   ].map((item, index) => (
                     <p key={index} className="text-white">
                       <span className="font-semibold">{item.label}:</span> {item.value}

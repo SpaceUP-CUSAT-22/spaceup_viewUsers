@@ -127,12 +127,13 @@ function Register() {
     {users && (
       <div className="bg-zinc-800 rounded-xl p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
-          { label: "Total registered", value: users.length },
+          { label: "Total registered", value: (users.length - users.filter(user => user.independence === true).length) + (7*users.filter(user => user.independence === true).length) },
           { label: "SEDS members", value: users.filter(user => user.cusatian === 'seds').length },
           { label: "Non-SEDS members", value: users.filter(user => user.cusatian === 'nonseds').length },
           { label: "Total T-shirts", value: users.filter(user => user.tshirt === 'yes').length },
           { label: "Total Amount", value: `₹${totalPrice}` },
           { label: "Total Veg", value: users.filter(user => user.food === 'veg').length },
+          { label: "Independence Offer", value: users.filter(user => user.independence === true).length },
         ].map((item, index) => (
           <div key={index} className="bg-zinc-700 p-4 rounded-lg">
             <p className="text-zinc-300 text-sm">{item.label}</p>
@@ -144,7 +145,7 @@ function Register() {
 
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {usersCopy && usersCopy.map(user => (
-        <div key={user.id} className="bg-zinc-800 rounded-xl overflow-hidden shadow-lg">
+        <div key={user.id} className={`${user.independence ? 'bg-green-900' : 'bg-zinc-800'} rounded-xl overflow-hidden shadow-lg`}>
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-red-500 text-xl font-bold">{user.token || 'No Token'}</h2>
