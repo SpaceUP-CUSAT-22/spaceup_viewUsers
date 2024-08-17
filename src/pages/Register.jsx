@@ -134,6 +134,9 @@ function Register() {
           { label: "Total Amount", value: `₹${totalPrice}` },
           { label: "Total Veg", value: users.filter(user => user.food === 'veg').length },
           { label: "Independence Offer", value: users.filter(user => user.independence === true).length },
+          { label: "Varun", value: users.filter(user => user.session === "varun").length },
+          { label: "Ajison", value: users.filter(user => user.session === "ajison").length },
+          { label: "Jithin", value: users.filter(user => user.session === "jithin").length },
         ].map((item, index) => (
           <div key={index} className="bg-zinc-700 p-4 rounded-lg">
             <p className="text-zinc-300 text-sm">{item.label}</p>
