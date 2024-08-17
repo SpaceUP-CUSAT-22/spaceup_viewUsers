@@ -128,6 +128,7 @@ function Register() {
       <div className="bg-zinc-800 rounded-xl p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
           { label: "Total registered", value: (users.length - users.filter(user => user.independence === true).length) + (7*users.filter(user => user.independence === true).length) },
+          { label: "Arrived", value: users.filter(user => user.arrived === true).length },
           { label: "SEDS members", value: users.filter(user => user.cusatian === 'seds').length },
           { label: "Non-SEDS members", value: users.filter(user => user.cusatian === 'nonseds').length },
           { label: "Total T-shirts", value: users.filter(user => user.tshirt === 'yes').length },
