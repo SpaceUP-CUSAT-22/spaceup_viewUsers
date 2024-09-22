@@ -84,6 +84,9 @@ function Tshirt() {
           <Link to="/register" className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
             Register
           </Link>
+          <Link to="/volunteer" className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
+            Volunteer
+          </Link>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
             <input
               onChange={handleCode}
