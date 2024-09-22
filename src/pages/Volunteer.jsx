@@ -2,7 +2,7 @@ import React from 'react'
 
 const Volunteer = () => {
   return (
-    <div>Volunteer</div>
+    <div>Volunteerr</div>
   )
 }
 
