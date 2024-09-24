@@ -1,6 +1,4 @@
-import React from 'react'
-
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 
@@ -20,7 +18,7 @@ const Volunteer = () => {
 
   useEffect(() => {
     // Fetch the volunteer applications
-    async function getVolunteerApplications() {
+    const getVolunteerApplications = async () => {
       try {
         const querySnapshot = await getDocs(volunteersRef);
         const volunteerList = [];
@@ -30,8 +28,10 @@ const Volunteer = () => {
         setVolunteers(volunteerList);
       } catch (error) {
         console.error("Error fetching volunteer applications:", error);
+        // Display a user-friendly error message
+        alert("Error fetching volunteer applications. Please try again later.");
       }
-    }
+    };
 
     getVolunteerApplications();
   }, []);
@@ -39,16 +39,20 @@ const Volunteer = () => {
   return (
     <div>
       <h1>Volunteer Applications</h1>
-      {volunteers.map((volunteer) => (
-        <div key={volunteer.id}>
-          {/* Display volunteer information here */}
-          <p>{volunteer.name}</p>
-          {/* Add more fields as needed */}
-        </div>
-      ))}
+      {volunteers.length === 0 ? (
+        <p>Loading volunteer applications...</p>
+      ) : (
+        volunteers.map((volunteer) => (
+          <div key={volunteer.id} className="volunteer-card">
+            <h3>{volunteer.name}</h3>
+            <p>Email: {volunteer.email}</p>
+            <p>Phone: {volunteer.phone}</p>
+            {/* Add more fields as needed */}
+          </div>
+        ))
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default Volunteer
-
+export default Volunteer;
