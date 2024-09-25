@@ -19,6 +19,7 @@ const volunteersRef = collection(db, "volunteer_applications");
 
 const Volunteer = () => {
   const [volunteers, setVolunteers] = useState([]);
+  const [volunteersCopy, setVolunteersCopy] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -30,6 +31,7 @@ const Volunteer = () => {
         const volunteerList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         console.log("Fetched volunteers:", volunteerList);
         setVolunteers(volunteerList);
+        setVolunteersCopy(volunteerList);
       } catch (error) {
         console.error("Error fetching volunteer applications:", error);
         setError("Error fetching volunteer applications. Please try again later.");
@@ -49,6 +51,11 @@ const Volunteer = () => {
     return <div className="text-red-500 text-center mt-8">{error}</div>;
   }
 
+  const handleTagFilter = (e) => {
+    const tag = e.target.innerText;
+    setVolunteersCopy(tag ? volunteers.filter(volunteer => volunteer.preferredTeam == tag) : volunteers);
+  }
+
   return (
     <div className="bg-zinc-900 min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -64,8 +71,42 @@ const Volunteer = () => {
         {volunteers.length === 0 ? (
           <p className="text-white text-center">No volunteer applications found.</p>
         ) : (
+        <>
+          <div className='flex justify-around mb-20'>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              tech
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              ambience
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              events
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              outreach
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              food committee
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              operations
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              curation
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              human resources
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              sponsorship
+            </div>
+            <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
+              production
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {volunteers.map((volunteer) => (
+            
+            {volunteersCopy.map((volunteer) => (
               <div
                 key={volunteer.id}
                 className="bg-zinc-800 rounded-xl overflow-hidden shadow-lg p-6"
@@ -80,24 +121,29 @@ const Volunteer = () => {
                   <li><strong>Reason:</strong> {volunteer.reason}</li>
                   <li><strong>Timestamp:</strong> {new Date(volunteer.timestamp?.toDate()).toLocaleString()}</li>
                 </ul>
-                {volunteer.fileUrl && volunteer.fileUrl.length > 0 && (
+                {volunteer.fileUrls && volunteer.fileUrls.length > 0 && (
                   <div className="mt-4">
-                    <h4 className="text-white font-semibold mb-2">Uploaded Images:</h4>
+                    <h4 className="text-white font-semibold mb-2">Uploaded Images/Videos:</h4>
                     <div className="grid grid-cols-2 gap-2">
-                      {volunteer.fileUrl.map((url, index) => (
-                        <img
+                      {volunteer.fileUrls.map((url, index) => (
+                        <a
                           key={index}
-                          src={url}
-                          alt={`Uploaded image ${index + 1}`}
-                          className="w-full h-auto object-cover rounded"
-                        />
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-500 hover:underline"
+                        >
+                          File {index + 1}
+                        </a>
                       ))}
                     </div>
                   </div>
                 )}
               </div>
+              
             ))}
           </div>
+        </>
         )}
       </div>
     </div>
