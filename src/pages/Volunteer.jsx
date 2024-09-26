@@ -72,6 +72,7 @@ const Volunteer = () => {
           <p className="text-white text-center">No volunteer applications found.</p>
         ) : (
         <>
+          <h2 className="text-white text-2xl font-bold mb-4">Total Volunteer Applications: {volunteers.length}</h2>
           <div className='flex justify-around mb-20'>
             <div onClick={handleTagFilter} className='cursor-pointer bg-green-500 rounded text-white px-5 py-2'>
               tech
