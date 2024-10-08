@@ -24,24 +24,35 @@ function Tshirt() {
   const [users, setUsers] = useState([])
   const [totalPrice, setTotalPrice] = useState(0)
   const [usersCopy, setUsersCopy] = useState([])
+  const [referralCounts, setReferralCounts] = useState({});
+
 
   useEffect(() => {
     async function fetchRegisteredUsers() {
-      const usersCollection = collection(db, 'orders');
+      const usersCollection = collection(db, 'merchorders');
       
       try {
         const querySnapshot = await getDocs(usersCollection);
         
         const usersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        setUsers(usersData)
-        setTotalPrice(usersData.reduce((sum, user) => sum + user.price, 0))
-        setUsersCopy(usersData)
+        setUsers(usersData);
+        setTotalPrice(usersData.reduce((sum, user) => sum + user.price, 0));
+        setUsersCopy(usersData);
+  
+        // Calculate referral counts
+        const counts = usersData.reduce((acc, user) => {
+          if (user.referralCode) {
+            acc[user.referralCode] = (acc[user.referralCode] || 0) + 1;
+          }
+          return acc;
+        }, {});
+        setReferralCounts(counts);
       } catch (error) {
         console.error('Error fetching registered users:', error);
       }
     }
-    fetchRegisteredUsers()
+    fetchRegisteredUsers();
   }, [])
 
   const handleCode = (e) => {
@@ -55,7 +66,7 @@ function Tshirt() {
   }
 
   const handleDeliveredChange = async (userId, delivered) => {
-    const userRef = doc(db, 'orders', userId);
+    const userRef = doc(db, 'merchorders', userId);
     try {
       await updateDoc(userRef, { delivered });
       setUsers(users.map(user => user.id === userId ? {...user, delivered} : user));
@@ -118,16 +129,27 @@ function Tshirt() {
               { label: "M T-shirts", value: users.filter(user => user.size === 'M').length },
               { label: "L T-shirts", value: users.filter(user => user.size === 'L').length },
               { label: "XL T-shirts", value: users.filter(user => user.size === 'XL').length },
-              { label: "XXL T-shirts", value: users.filter(user => user.size === 'XXL').length },
-              { label: "SEDS members", value: users.filter(user => user.cusatian === 'seds').length },
-              { label: "Non-SEDS members", value: users.filter(user => user.cusatian === 'nonseds').length },
-              { label: "Independence Offer", value: users.filter(user => user.independence === true).length },
+              { label: "XXL T-shirts", value: users.filter(user => user.size === 'XXL').length }
             ].map((item, index) => (
               <div key={index} className="bg-zinc-700 p-4 rounded-lg">
                 <p className="text-zinc-300 text-sm">{item.label}</p>
                 <p className="text-white text-2xl font-bold">{item.value}</p>
               </div>
             ))}
+            
+          </div>
+        )}
+        {Object.keys(referralCounts).length > 0 && (
+          <div className="bg-zinc-800 rounded-xl p-6 mb-8">
+            <h2 className="text-white text-xl font-bold mb-4">Referral Code Usage</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Object.entries(referralCounts).map(([code, count]) => (
+                <div key={code} className="bg-zinc-700 p-4 rounded-lg">
+                  <p className="text-zinc-300 text-sm">Referral Code: {code}</p>
+                  <p className="text-white text-2xl font-bold">Used {count} time{count !== 1 ? 's' : ''}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -155,19 +177,12 @@ function Tshirt() {
                     { label: "Email", value: user.email },
                     { label: "Size", value: user.size },
                     { label: "Address", value: user.address },
-                    { label: "From CUSAT", value: user.cusatian },
-                    ...(user.independence == true && user.sizes ? [
-                    
-                      { label: "T-shirt 1", value: user.sizes[0] },
-                      { label: "T-shirt 2", value: user.sizes[1] },
-                      { label: "T-shirt 3", value: user.sizes[2] },
-                      { label: "T-shirt 4", value: user.sizes[3] },
-                      { label: "T-shirt 5", value: user.sizes[4] },
-                      { label: "T-shirt 6", value: user.sizes[5] },
-                      { label: "T-shirt 7", value: user.sizes[6] },
-                      { label: "T-shirt 8", value: user.sizes[7] },
-                    ]: [])
-                  ].map((item, index) => (
+                    { label: "Orange Shirt", value: user.organgeShirt ? "Yes" : "No" },
+                    { label: "White Shirt", value: user.whiteShirt ? "Yes" : "No" },
+                    { label: "Price", value: user.price },
+                    { label: "Referral Code", value: user.referralCode },
+                    ]
+                  .map((item, index) => (
                     <p key={index} className="text-white">
                       <span className="font-semibold">{item.label}:</span> {item.value}
                     </p>

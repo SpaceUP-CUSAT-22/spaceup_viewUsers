@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { Link } from 'react-router-dom';
+import Papa from 'papaparse';
+
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
@@ -56,6 +58,18 @@ const Volunteer = () => {
     setVolunteersCopy(tag ? volunteers.filter(volunteer => volunteer.preferredTeam == tag) : volunteers);
   }
 
+  const exportToCSV = () => {
+    const csvData = Papa.unparse(volunteers);
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'registrations.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="bg-zinc-900 min-h-screen p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -105,6 +119,11 @@ const Volunteer = () => {
               production
             </div>
           </div>
+          <button
+            onClick={exportToCSV}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
+            Export to CSV
+          </button>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
             {volunteersCopy.map((volunteer) => (
