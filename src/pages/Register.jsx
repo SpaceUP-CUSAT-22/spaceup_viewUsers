@@ -27,28 +27,37 @@ function Register() {
 
   React.useEffect(() => {
     async function fetchRegisteredUsers() {
-      const usersCollection = collection(db, 'registrations');
+      const usersCollection = collection(db, 'ticketorders');
       
       try {
         const querySnapshot = await getDocs(usersCollection);
         
         const usersData = [];
+        let totalPriceSum = 0;
         
         querySnapshot.forEach((doc) => {
-          usersData.push({ id: doc.id, ...doc.data(), arrived: doc.data().arrived || false });
+          const userData = { id: doc.id, ...doc.data(), arrived: doc.data().arrived || false };
+          usersData.push(userData);
+          
+          // Calculate total price
+          if (userData.price) {
+            totalPriceSum += userData.price;
+          } else if (userData.referralCode) {
+            totalPriceSum += 359.10;
+          }
         });
         
-        setUsers(usersData)
-        setTotalPrice(usersData.reduce((sum, user) => sum + user.price, 0))
-        setUsersCopy(usersData)
-        console.log(usersData)
+        setUsers(usersData);
+        setTotalPrice(totalPriceSum);
+        setUsersCopy(usersData);
+        console.log(usersData);
       } catch (error) {
         console.error('Error fetching registered users:', error);
         throw error;
       }
     }
-    fetchRegisteredUsers()
-  }, [])
+    fetchRegisteredUsers();
+  }, []);
 
   const handleCode = (e) => {
     if(e.target.value == ''){
@@ -67,7 +76,7 @@ function Register() {
   }
 
   const handleArrivalChange = async (userId, arrived) => {
-    const userRef = doc(db, 'registrations', userId);
+    const userRef = doc(db, 'ticketorders', userId);
     try {
       await updateDoc(userRef, {
         arrived: arrived
@@ -130,17 +139,13 @@ function Register() {
     {users && (
       <div className="bg-zinc-800 rounded-xl p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[
-          { label: "Total registered", value: (users.length - users.filter(user => user.independence === true).length) + (7*users.filter(user => user.independence === true).length) },
+          { label: "Total registered", value: users.length },
           { label: "Arrived", value: users.filter(user => user.arrived === true).length },
-          { label: "SEDS members", value: users.filter(user => user.cusatian === 'seds').length },
-          { label: "Non-SEDS members", value: users.filter(user => user.cusatian === 'nonseds').length },
-          { label: "Total T-shirts", value: users.filter(user => user.tshirt === 'yes').length },
           { label: "Total Amount", value: `₹${totalPrice}` },
-          { label: "Total Veg", value: users.filter(user => user.food === 'veg').length },
-          { label: "Independence Offer", value: users.filter(user => user.independence === true).length },
-          { label: "Varun", value: users.filter(user => user.session === "varun").length },
-          { label: "Ajison", value: users.filter(user => user.session === "ajison").length },
-          { label: "Jithin", value: users.filter(user => user.session === "jithin").length },
+          { label: "Dr. Yedu Krishna", value: users.filter(user => user.workshop === "Dr. Yedu Krishna").length },
+          { label: "AMAL SREE AJITH", value: users.filter(user => user.workshop === "AMAL SREE AJITH").length },
+          { label: "TEAM MARUTSAKA", value: users.filter(user => user.workshop === "TEAM MARUTSAKA").length },
+          { label: "Quiz", value: users.filter(user => user.workshop === "Quiz").length },
         ].map((item, index) => (
           <div key={index} className="bg-zinc-700 p-4 rounded-lg">
             <p className="text-zinc-300 text-sm">{item.label}</p>
@@ -172,15 +177,10 @@ function Register() {
                 { label: "Name", value: user.name },
                 { label: "Phone", value: user.phone },
                 { label: "Email", value: user.email },
-                { label: "Institution", value: user.institution },
-                { label: "Class/Year", value: user.class },
-                { label: "Session", value: user.session },
-                { label: "Diet", value: user.food || 'Not specified' },
-                ...(user.tshirt === "yes" ? [
-                  { label: "T-shirt size", value: user.size },
-                  { label: "Address", value: user.address },
-                ] : []),
-                { label: "From CUSAT", value: user.cusatian },
+                { label: "Institution", value: user.college },
+                { label: "Class/Year", value: user.year },
+                { label: "Workshop", value: user.workshop },
+                { label: "Referral code", value: user.referralCode },
               ].map((item, index) => (
                 <p key={index} className="text-white">
                   <span className="font-semibold">{item.label}:</span> {item.value}
