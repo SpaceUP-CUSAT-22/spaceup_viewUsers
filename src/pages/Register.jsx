@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore, collection, getDocs, updateDoc, doc } from "firebase/firestore";
@@ -24,8 +24,10 @@ function Register() {
   const [users, setUsers] = React.useState([])
   const [totalPrice, setTotalPrice] = React.useState(0)
   const [usersCopy, setUsersCopy] = React.useState([])
+  const [referralCounts, setReferralCounts] = useState({});
 
-  React.useEffect(() => {
+
+  useEffect(() => {
     async function fetchRegisteredUsers() {
       const usersCollection = collection(db, 'ticketorders');
       
@@ -50,6 +52,16 @@ function Register() {
         setUsers(usersData);
         setTotalPrice(totalPriceSum);
         setUsersCopy(usersData);
+
+        // Calculate referral counts
+        const counts = usersData.reduce((acc, user) => {
+          if (user.referralCode) {
+            acc[user.referralCode] = (acc[user.referralCode] || 0) + 1;
+          }
+          return acc;
+        }, {});
+        setReferralCounts(counts);
+
         console.log(usersData);
       } catch (error) {
         console.error('Error fetching registered users:', error);
@@ -154,6 +166,21 @@ function Register() {
         ))}
       </div>
     )}
+
+{Object.keys(referralCounts).length > 0 && (
+          <div className="bg-zinc-800 rounded-xl p-6 mb-8">
+            <h2 className="text-white text-xl font-bold mb-4">Referral Code Usage</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {Object.entries(referralCounts).map(([code, count]) => (
+                <div key={code} className="bg-zinc-700 p-4 rounded-lg">
+                  <p className="text-zinc-300 text-sm">Referral Code: {code}</p>
+                  <p className="text-white text-2xl font-bold">Used {count} time{count !== 1 ? 's' : ''}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
 
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {usersCopy && usersCopy.map(user => (
