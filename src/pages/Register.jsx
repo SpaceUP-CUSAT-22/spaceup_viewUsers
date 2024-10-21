@@ -144,6 +144,24 @@ function Register() {
     document.body.removeChild(link);
   };
 
+  const handleSuspiciousChange = async (userId, suspicious) => {
+    const [dbIndex, docId] = userId.split('-');
+    const db = dbIndex === '1' ? db1 : db2;
+    const userRef = doc(db, 'ticketorders', docId);
+    try {
+      await updateDoc(userRef, {
+        suspicious: suspicious
+      });
+      setUsers(users.map(user => 
+        user.id === userId ? {...user, suspicious: suspicious} : user
+      ));
+      setUsersCopy(usersCopy.map(user => 
+        user.id === userId ? {...user, suspicious: suspicious} : user
+      ));
+    } catch (error) {
+      console.error("Error updating user suspicious status:", error);
+    }
+  };
 
   return (
     <div className="bg-zinc-900 min-h-screen p-4 sm:p-6 lg:p-8">
@@ -216,31 +234,28 @@ function Register() {
           <div className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-red-500 text-xl font-bold">{user.token || 'No Token'}</h2>
-              <div className="flex items-center">
-                <input 
-                  type="checkbox" 
-                  id={`arrived-${user.id}`}
-                  checked={user.arrived || false}
-                  onChange={(e) => handleArrivalChange(user.id, e.target.checked)}
-                  className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                />
-                <label htmlFor={`arrived-${user.id}`} className="ml-2 text-white text-sm">Arrived</label>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    id={`arrived-${user.id}`}
+                    checked={user.arrived || false}
+                    onChange={(e) => handleArrivalChange(user.id, e.target.checked)}
+                    className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                  />
+                  <label htmlFor={`arrived-${user.id}`} className="ml-2 text-white text-sm">Arrived</label>
+                </div>
+                <div className="flex items-center">
+                  <input 
+                    type="checkbox" 
+                    id={`suspicious-${user.id}`}
+                    checked={user.suspicious || false}
+                    onChange={(e) => handleSuspiciousChange(user.id, e.target.checked)}
+                    className="w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500"
+                  />
+                  <label htmlFor={`suspicious-${user.id}`} className="ml-2 text-white text-sm">Suspicious</label>
+                </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              {[
-                { label: "Name", value: user.name },
-                { label: "Phone", value: user.phone },
-                { label: "Email", value: user.email },
-                { label: "Institution", value: user.college },
-                { label: "Class/Year", value: user.year },
-                { label: "Workshop", value: user.workshop },
-                { label: "Referral code", value: user.referralCode },
-              ].map((item, index) => (
-                <p key={index} className="text-white">
-                  <span className="font-semibold">{item.label}:</span> {item.value}
-                </p>
-              ))}
             </div>
           </div>
           {user.paymentScreenshot && (
