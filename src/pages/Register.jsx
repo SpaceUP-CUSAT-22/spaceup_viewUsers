@@ -5,7 +5,7 @@ import { getFirestore, collection, getDocs, updateDoc, doc } from "firebase/fire
 import { Link } from 'react-router-dom';
 import Papa from 'papaparse';
 
-const firebaseConfig = {
+const firebaseConfig1 = {
   apiKey: import.meta.env.VITE_FIREBASE_APIKEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN,
   projectId: import.meta.env.VITE_FIREBASE_PROJECTID,
@@ -15,10 +15,22 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENTID
 };
 
+const firebaseConfig2 = {
+  apiKey: import.meta.env.VITE_FIREBASE_APIKEY_2,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN_2,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECTID_2,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGEBUCKET_2,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGINGSENDERID_2,
+  appId: import.meta.env.VITE_FIREBASE_APPID_2,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENTID_2
+};
+
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+const app1 = initializeApp(firebaseConfig1, "app1");
+const app2 = initializeApp(firebaseConfig2, "app2");
+const db1 = getFirestore(app1);
+const db2 = getFirestore(app2);
+
 
 function Register() {
   const [users, setUsers] = React.useState([])
@@ -29,25 +41,39 @@ function Register() {
 
   useEffect(() => {
     async function fetchRegisteredUsers() {
-      const usersCollection = collection(db, 'ticketorders');
+      const usersCollection1 = collection(db1, 'ticketorders');
+      const usersCollection2 = collection(db2, 'ticketorders');
       
       try {
-        const querySnapshot = await getDocs(usersCollection);
+        const [querySnapshot1, querySnapshot2] = await Promise.all([
+          getDocs(usersCollection1),
+          getDocs(usersCollection2)
+        ]);
         
         const usersData = [];
         let totalPriceSum = 0;
         
-        querySnapshot.forEach((doc) => {
-          const userData = { id: doc.id, ...doc.data(), arrived: doc.data().arrived || false };
-          usersData.push(userData);
-          
-          // Calculate total price
-          if (userData.price) {
-            totalPriceSum += userData.price;
-          } else if (userData.referralCode) {
-            totalPriceSum += 359.10;
-          }
-        });
+        function processSnapshot(querySnapshot, dbIndex) {
+          querySnapshot.forEach((doc) => {
+            const userData = { 
+              id: `${dbIndex}-${doc.id}`, 
+              ...doc.data(), 
+              arrived: doc.data().arrived || false,
+              dbSource: dbIndex
+            };
+            usersData.push(userData);
+            
+            // Calculate total price
+            if (userData.price) {
+              totalPriceSum += userData.price;
+            } else if (userData.referralCode) {
+              totalPriceSum += 359.10;
+            }
+          });
+        }
+
+        processSnapshot(querySnapshot1, 1);
+        processSnapshot(querySnapshot2, 2);
         
         setUsers(usersData);
         setTotalPrice(totalPriceSum);
@@ -88,7 +114,9 @@ function Register() {
   }
 
   const handleArrivalChange = async (userId, arrived) => {
-    const userRef = doc(db, 'ticketorders', userId);
+    const [dbIndex, docId] = userId.split('-');
+    const db = dbIndex === '1' ? db1 : db2;
+    const userRef = doc(db, 'ticketorders', docId);
     try {
       await updateDoc(userRef, {
         arrived: arrived
