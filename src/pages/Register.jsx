@@ -256,8 +256,26 @@ function Register() {
                   <label htmlFor={`suspicious-${user.id}`} className="ml-2 text-white text-sm">Suspicious</label>
                 </div>
               </div>
+              
+            </div>
+            <div className="space-y-2">
+              {[
+                { label: "Name", value: user.name },
+                { label: "Phone", value: user.phone },
+                { label: "Email", value: user.email },
+                { label: "Institution", value: user.college },
+                { label: "Class/Year", value: user.year },
+                { label: "Workshop", value: user.workshop },
+                { label: "Referral code", value: user.referralCode },
+                { label: "Price", value: user.price },
+              ].map((item, index) => (
+                <p key={index} className="text-white">
+                  <span className="font-semibold">{item.label}:</span> {item.value}
+                </p>
+              ))}
             </div>
           </div>
+          
           {user.paymentScreenshot && (
             <div className="p-4 bg-zinc-700">
               <p className="text-white text-sm mb-2">Payment Screenshot:</p>
