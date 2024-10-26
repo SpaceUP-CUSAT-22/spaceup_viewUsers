@@ -200,10 +200,10 @@ function Register() {
           { label: "Total registered", value: users.length },
           { label: "Arrived", value: users.filter(user => user.arrived === true).length },
           { label: "Total Amount", value: `₹${totalPrice}` },
-          { label: "Dr. Yedu Krishna", value: users.filter(user => user.workshop === "Dr. Yedu Krishna").length },
-          { label: "AMAL SREE AJITH", value: users.filter(user => user.workshop === "AMAL SREE AJITH").length },
-          { label: "TEAM MARUTSAKA", value: users.filter(user => user.workshop === "TEAM MARUTSAKA").length },
-          { label: "Quiz", value: users.filter(user => user.workshop === "Quiz").length },
+          { label: "Dr. Yedu Krishna", value: `${users.filter(user => user.workshop === "Dr. Yedu Krishna" && user.arrived).length}/${users.filter(user => user.workshop === "Dr. Yedu Krishna").length}` },
+          { label: "AMAL SREE AJITH", value: `${users.filter(user => user.workshop === "AMAL SREE AJITH" && user.arrived).length}/${users.filter(user => user.workshop === "AMAL SREE AJITH").length }` },
+          { label: "TEAM MARUTSAKA", value: `${users.filter(user => user.workshop === "TEAM MARUTSAKA" && user.arrived).length}/${users.filter(user => user.workshop === "TEAM MARUTSAKA").length }` },
+          { label: "Quiz", value: `${users.filter(user => user.workshop === "Quiz" && user.arrived).length}/${users.filter(user => user.workshop === "Quiz").length }` },
         ].map((item, index) => (
           <div key={index} className="bg-zinc-700 p-4 rounded-lg">
             <p className="text-zinc-300 text-sm">{item.label}</p>
