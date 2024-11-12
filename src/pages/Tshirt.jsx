@@ -15,10 +15,21 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENTID
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getFirestore(app);
+const firebaseConfig2 = {
+  apiKey: import.meta.env.VITE_FIREBASE_APIKEY_2,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTHDOMAIN_2,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECTID_2,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGEBUCKET_2,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGINGSENDERID_2,
+  appId: import.meta.env.VITE_FIREBASE_APPID_2,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENTID_2
+};
+
+// Initialize both Firebase instances
+const app1 = initializeApp(firebaseConfig, "app1");
+const app2 = initializeApp(firebaseConfig2, "app2");
+const db1 = getFirestore(app1);
+const db2 = getFirestore(app2);
 
 function Tshirt() {
   const [users, setUsers] = useState([])
@@ -29,17 +40,35 @@ function Tshirt() {
 
   useEffect(() => {
     async function fetchRegisteredUsers() {
-      const usersCollection = collection(db, 'merchorders');
+      const usersCollection1 = collection(db1, 'merchorders');
+      const usersCollection2 = collection(db2, 'merchorders');
       
       try {
-        const querySnapshot = await getDocs(usersCollection);
+        const [querySnapshot1, querySnapshot2] = await Promise.all([
+          getDocs(usersCollection1),
+          getDocs(usersCollection2)
+        ]);
         
-        const usersData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const usersData = [];
+        
+        function processSnapshot(querySnapshot, dbIndex) {
+          querySnapshot.forEach((doc) => {
+            const userData = { 
+              id: `${dbIndex}-${doc.id}`, 
+              ...doc.data(),
+              dbSource: dbIndex 
+            };
+            usersData.push(userData);
+          });
+        }
+
+        processSnapshot(querySnapshot1, 1);
+        processSnapshot(querySnapshot2, 2);
         
         setUsers(usersData);
         setTotalPrice(usersData.reduce((sum, user) => sum + user.price, 0));
         setUsersCopy(usersData);
-  
+
         // Calculate referral counts
         const counts = usersData.reduce((acc, user) => {
           if (user.referralCode) {
@@ -66,11 +95,17 @@ function Tshirt() {
   }
 
   const handleDeliveredChange = async (userId, delivered) => {
-    const userRef = doc(db, 'merchorders', userId);
+    const [dbIndex, docId] = userId.split('-');
+    const db = dbIndex === '1' ? db1 : db2;
+    const userRef = doc(db, 'merchorders', docId);
     try {
       await updateDoc(userRef, { delivered });
-      setUsers(users.map(user => user.id === userId ? {...user, delivered} : user));
-      setUsersCopy(usersCopy.map(user => user.id === userId ? {...user, delivered} : user));
+      setUsers(users.map(user => 
+        user.id === userId ? {...user, delivered} : user
+      ));
+      setUsersCopy(usersCopy.map(user => 
+        user.id === userId ? {...user, delivered} : user
+      ));
     } catch (error) {
       console.error("Error updating delivery status:", error);
     }
@@ -123,13 +158,10 @@ function Tshirt() {
           <div className="bg-zinc-800 rounded-xl p-6 mb-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {[
               { label: "Total Amount", value: `₹${totalPrice}` },
-              { label: "Total T-shirts", value: users.length },
-              { label: "XS T-shirts", value: users.filter(user => user.size === 'XS').length },
-              { label: "S T-shirts", value: users.filter(user => user.size === 'S').length + 1 },
-              { label: "M T-shirts", value: users.filter(user => user.size === 'M').length },
-              { label: "L T-shirts", value: users.filter(user => user.size === 'L').length },
-              { label: "XL T-shirts", value: users.filter(user => user.size === 'XL').length },
-              { label: "XXL T-shirts", value: users.filter(user => user.size === 'XXL').length }
+              { label: "Total Orders", value: users.length },
+              { label: "Black/Orange T-Shirts", value: users.filter(user => user.orangeShirt).length },
+              { label: "White T-Shirts", value: users.filter(user => user.whiteShirt).length },
+              { label: "White Hoodies", value: users.filter(user => user.hoodie).length },
             ].map((item, index) => (
               <div key={index} className="bg-zinc-700 p-4 rounded-lg">
                 <p className="text-zinc-300 text-sm">{item.label}</p>
@@ -177,8 +209,9 @@ function Tshirt() {
                     { label: "Email", value: user.email },
                     { label: "Size", value: user.size },
                     { label: "Address", value: user.address },
-                    { label: "Orange Shirt", value: user.organgeShirt ? "Yes" : "No" },
-                    { label: "White Shirt", value: user.whiteShirt ? "Yes" : "No" },
+                    { label: "Orange Shirt", value: user.orangeShirt == 1 || user.orangeShirt == true ? "Yes" : "No" },
+                    { label: "White Shirt", value: user.whiteShirt == 1 || user.whiteShirt == true ? "Yes" : "No" },
+                    { label: "Hoodie", value: user.hoodie == 1 || user.hoodie == true ? "Yes" : "No" },
                     { label: "Price", value: user.price },
                     { label: "Referral Code", value: user.referralCode },
                     ]
