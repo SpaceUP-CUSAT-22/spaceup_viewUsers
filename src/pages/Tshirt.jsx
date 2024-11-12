@@ -162,6 +162,7 @@ function Tshirt() {
               { label: "Black/Orange T-Shirts", value: users.filter(user => user.orangeShirt).length },
               { label: "White T-Shirts", value: users.filter(user => user.whiteShirt).length },
               { label: "White Hoodies", value: users.filter(user => user.hoodie).length },
+              { label: "Black Hoodies", value: users.filter(user => user.blackHoodie).length },
             ].map((item, index) => (
               <div key={index} className="bg-zinc-700 p-4 rounded-lg">
                 <p className="text-zinc-300 text-sm">{item.label}</p>
@@ -212,6 +213,7 @@ function Tshirt() {
                     { label: "Orange Shirt", value: user.orangeShirt == 1 || user.orangeShirt == true ? "Yes" : "No" },
                     { label: "White Shirt", value: user.whiteShirt == 1 || user.whiteShirt == true ? "Yes" : "No" },
                     { label: "Hoodie", value: user.hoodie == 1 || user.hoodie == true ? "Yes" : "No" },
+                    { label: "Black Hoodie", value: user.blackHoodie == 1 || user.blackHoodie == true ? "Yes" : "No" },
                     { label: "Price", value: user.price },
                     { label: "Referral Code", value: user.referralCode },
                     ]
